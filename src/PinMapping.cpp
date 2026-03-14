@@ -88,6 +88,34 @@ static const char* TAG = "pinmapping";
 #define CMT_SDIO GPIO_NUM_NC
 #endif
 
+#ifndef SX1262_CLK
+#define SX1262_CLK GPIO_NUM_NC
+#endif
+
+#ifndef SX1262_CS
+#define SX1262_CS GPIO_NUM_NC
+#endif
+
+#ifndef SX1262_BUSY
+#define SX1262_BUSY GPIO_NUM_NC
+#endif
+
+#ifndef SX1262_RST
+#define SX1262_RST GPIO_NUM_NC
+#endif
+
+#ifndef SX1262_IRQ
+#define SX1262_IRQ GPIO_NUM_NC
+#endif
+
+#ifndef SX1262_MISO
+#define SX1262_MISO GPIO_NUM_NC
+#endif
+
+#ifndef SX1262_MOSI
+#define SX1262_MOSI GPIO_NUM_NC
+#endif
+
 #ifndef W5500_MOSI
 #define W5500_MOSI GPIO_NUM_NC
 #endif
@@ -158,6 +186,14 @@ PinMappingClass::PinMappingClass()
     _pinMapping.cmt_gpio2 = CMT_GPIO2;
     _pinMapping.cmt_gpio3 = CMT_GPIO3;
     _pinMapping.cmt_sdio = CMT_SDIO;
+
+    _pinMapping.sx1262_clk = SX1262_CLK;
+    _pinMapping.sx1262_cs = SX1262_CS;
+    _pinMapping.sx1262_busy = SX1262_BUSY;
+    _pinMapping.sx1262_rst = SX1262_RST;
+    _pinMapping.sx1262_irq = SX1262_IRQ;
+    _pinMapping.sx1262_miso = SX1262_MISO;
+    _pinMapping.sx1262_mosi = SX1262_MOSI;
 
     _pinMapping.w5500_mosi = W5500_MOSI;
     _pinMapping.w5500_miso = W5500_MISO;
@@ -241,6 +277,14 @@ bool PinMappingClass::init(const String& deviceMapping)
             _pinMapping.cmt_gpio3 = doc[i]["cmt"]["gpio3"] | CMT_GPIO3;
             _pinMapping.cmt_sdio = doc[i]["cmt"]["sdio"] | CMT_SDIO;
 
+            _pinMapping.sx1262_clk = doc[i]["sx1262"]["clk"] | SX1262_CLK;
+            _pinMapping.sx1262_cs = doc[i]["sx1262"]["cs"] | SX1262_CS;
+            _pinMapping.sx1262_busy = doc[i]["sx1262"]["busy"] | SX1262_BUSY;
+            _pinMapping.sx1262_rst = doc[i]["sx1262"]["rst"] | SX1262_RST;
+            _pinMapping.sx1262_irq = doc[i]["sx1262"]["irq"] | SX1262_IRQ;
+            _pinMapping.sx1262_miso = doc[i]["sx1262"]["miso"] | SX1262_MISO;
+            _pinMapping.sx1262_mosi = doc[i]["sx1262"]["mosi"] | SX1262_MOSI;
+
             _pinMapping.w5500_mosi = doc[i]["w5500"]["mosi"] | W5500_MOSI;
             _pinMapping.w5500_miso = doc[i]["w5500"]["miso"] | W5500_MISO;
             _pinMapping.w5500_sclk = doc[i]["w5500"]["sclk"] | W5500_SCLK;
@@ -294,6 +338,16 @@ bool PinMappingClass::isValidCmt2300Config() const
         && _pinMapping.cmt_cs > GPIO_NUM_NC
         && _pinMapping.cmt_fcs > GPIO_NUM_NC
         && _pinMapping.cmt_sdio > GPIO_NUM_NC;
+}
+
+bool PinMappingClass::isValidSx1262Config() const
+{
+    return _pinMapping.sx1262_clk > GPIO_NUM_NC
+        && _pinMapping.sx1262_cs > GPIO_NUM_NC
+        && _pinMapping.sx1262_busy > GPIO_NUM_NC
+        && _pinMapping.sx1262_irq > GPIO_NUM_NC
+        && _pinMapping.sx1262_miso > GPIO_NUM_NC
+        && _pinMapping.sx1262_mosi > GPIO_NUM_NC;
 }
 
 bool PinMappingClass::isValidW5500Config() const

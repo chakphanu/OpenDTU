@@ -3,6 +3,7 @@
  * Copyright (C) 2023-2025 Thomas Basler and others
  */
 #include "Display_Graphic.h"
+#include "Display_Graphic_ST7796.h"
 #include "Configuration.h"
 #include "Datastore.h"
 #include "I18n.h"
@@ -52,6 +53,28 @@ void DisplayGraphicClass::init(Scheduler& scheduler)
     const PinMapping_t& pin = PinMapping.get();
     _display_type = static_cast<DisplayType_t>(pin.display_type);
     if (!isValidDisplay()) {
+        return;
+    }
+
+    if (_display_type == DisplayType_t::ST7796_222X480) {
+        _st7796Display = std::make_unique<DisplayGraphicST7796Class>();
+        if (!_st7796Display->init(pin)) {
+            _st7796Display.reset();
+            return;
+        }
+
+        scheduler.addTask(_loopTask);
+        _loopTask.setInterval(_period);
+        _loopTask.enable();
+
+        auto& config = Configuration.get();
+        setDiagramMode(static_cast<DiagramMode_t>(config.Display.Diagram.Mode));
+        setOrientation(config.Display.Rotation);
+        enablePowerSafe = config.Display.PowerSafe;
+        enableScreensaver = config.Display.ScreenSaver;
+        setContrast(config.Display.Contrast);
+        setLocale(config.Display.Locale);
+        setStartupDisplay();
         return;
     }
 
@@ -160,6 +183,12 @@ void DisplayGraphicClass::setOrientation(const uint8_t rotation)
         return;
     }
 
+    if (_st7796Display) {
+        _st7796Display->setOrientation(rotation);
+        _isLarge = true;
+        return;
+    }
+
     switch (rotation) {
     case 0:
         _display->setDisplayRotation(U8G2_R0);
@@ -181,6 +210,11 @@ void DisplayGraphicClass::setOrientation(const uint8_t rotation)
 
 void DisplayGraphicClass::setLocale(const String& locale)
 {
+    if (_st7796Display) {
+        _st7796Display->setLocale(locale);
+        return;
+    }
+
     _display_language = locale;
     uint8_t idx = I18N_LOCALE_EN;
     if (locale == "de") {
@@ -213,12 +247,20 @@ void DisplayGraphicClass::setDiagramMode(DiagramMode_t mode)
 {
     if (mode < DiagramMode_t::DisplayMode_Max) {
         _diagram_mode = mode;
+        if (_st7796Display) {
+            _st7796Display->setDiagramMode(mode);
+        }
     }
 }
 
 void DisplayGraphicClass::setStartupDisplay()
 {
     if (!isValidDisplay()) {
+        return;
+    }
+
+    if (_st7796Display) {
+        _st7796Display->setStartupDisplay();
         return;
     }
 
@@ -235,6 +277,11 @@ DisplayGraphicDiagramClass& DisplayGraphicClass::Diagram()
 void DisplayGraphicClass::loop()
 {
     _loopTask.setInterval(_period);
+
+    if (_st7796Display) {
+        _st7796Display->loop(enablePowerSafe, enableScreensaver);
+        return;
+    }
 
     _display->clearBuffer();
     bool displayPowerSave = false;
@@ -327,11 +374,19 @@ void DisplayGraphicClass::setContrast(const uint8_t contrast)
     if (!isValidDisplay()) {
         return;
     }
+    if (_st7796Display) {
+        _st7796Display->setContrast(contrast);
+        return;
+    }
     _display->setContrast(contrast * 2.55f);
 }
 
 void DisplayGraphicClass::setStatus(const bool turnOn)
 {
+    if (_st7796Display) {
+        _st7796Display->setStatus(turnOn);
+        return;
+    }
     _displayTurnedOn = turnOn;
 }
 

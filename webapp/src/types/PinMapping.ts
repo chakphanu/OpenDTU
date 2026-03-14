@@ -16,6 +16,16 @@ export interface Cmt2300 {
     gpio3: number;
 }
 
+export interface Sx1262 {
+    miso: number;
+    mosi: number;
+    clk: number;
+    cs: number;
+    busy: number;
+    rst: number;
+    irq: number;
+}
+
 export interface Ethernet {
     enabled: boolean;
     phy_addr: number;
@@ -44,6 +54,7 @@ export interface Device {
     links: Array<Links>;
     nrf24: Nrf24;
     cmt: Cmt2300;
+    sx1262: Sx1262;
     eth: Ethernet;
     display: Display;
 }

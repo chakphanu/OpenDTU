@@ -107,6 +107,9 @@ export default defineComponent({
             return comSel == comCur;
         },
         capitalizeFirstLetter(value: string): string {
+            if (value === 'sx1262') {
+                return 'SX1262';
+            }
             return value.charAt(0).toUpperCase() + value.slice(1);
         },
     },

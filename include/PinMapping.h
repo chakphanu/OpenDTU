@@ -27,6 +27,14 @@ struct PinMapping_t {
     gpio_num_t cmt_gpio3;
     gpio_num_t cmt_sdio;
 
+    gpio_num_t sx1262_miso;
+    gpio_num_t sx1262_mosi;
+    gpio_num_t sx1262_clk;
+    gpio_num_t sx1262_cs;
+    gpio_num_t sx1262_busy;
+    gpio_num_t sx1262_rst;
+    gpio_num_t sx1262_irq;
+
     gpio_num_t w5500_mosi;
     gpio_num_t w5500_miso;
     gpio_num_t w5500_sclk;
@@ -63,6 +71,7 @@ public:
 
     bool isValidNrf24Config() const;
     bool isValidCmt2300Config() const;
+    bool isValidSx1262Config() const;
     bool isValidW5500Config() const;
 #if CONFIG_ETH_USE_ESP32_EMAC
     bool isValidEthConfig() const;

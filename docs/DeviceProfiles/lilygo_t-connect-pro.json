@@ -1,0 +1,32 @@
+[
+    {
+        "name": "LILYGO T-Connect-Pro SX1262",
+        "links": [
+            {"name": "Datasheet", "url": "https://www.lilygo.cc/products/t-connect-pro"}
+        ],
+        "sx1262": {
+            "miso": 13,
+            "mosi": 11,
+            "clk": 12,
+            "cs": 14,
+            "busy": 38,
+            "rst": 42,
+            "irq": 45
+        },
+        "w5500": {
+            "mosi": 11,
+            "miso": 13,
+            "sclk": 12,
+            "cs": 10,
+            "int": 9,
+            "rst": 48
+        },
+        "display": {
+            "type": 6,
+            "data": 41,
+            "clk": 12,
+            "cs": 21,
+            "reset": -1
+        }
+    }
+]

@@ -5,6 +5,7 @@
 #include "defaults.h"
 #include <TaskSchedulerDeclarations.h>
 #include <U8g2lib.h>
+#include <memory>
 
 #define CHART_HEIGHT 20 // chart area hight in pixels
 #define CHART_WIDTH 47 // chart area width in pixels
@@ -21,8 +22,11 @@ enum DisplayType_t {
     SH1106,
     SSD1309,
     ST7567_GM12864I_59N,
+    ST7796_222X480,
     DisplayType_Max,
 };
+
+class DisplayGraphicST7796Class;
 
 enum DiagramMode_t {
     Off,
@@ -58,7 +62,9 @@ private:
 
     Task _loopTask;
 
-    U8G2* _display;
+    std::unique_ptr<DisplayGraphicST7796Class> _st7796Display;
+
+    U8G2* _display = nullptr;
     DisplayGraphicDiagramClass _diagram;
 
     bool _displayTurnedOn;
