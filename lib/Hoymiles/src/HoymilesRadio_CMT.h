@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #pragma once
 
-#include "HoymilesRadio.h"
+#include "HoymilesRadio_SubGhz.h"
 #include "commands/CommandAbstract.h"
 #include "types.h"
 #include <Arduino.h>
@@ -17,60 +17,38 @@
 #define HOYMILES_CMT_WORK_FREQ 865000000
 #endif
 
-enum CountryModeId_t {
-    MODE_EU,
-    MODE_US,
-    MODE_BR,
-    CountryModeId_Max
-};
-
-struct CountryFrequencyDefinition_t {
-    FrequencyBand_t Band;
-    uint32_t Freq_Min;
-    uint32_t Freq_Max;
-    uint32_t Freq_Legal_Min;
-    uint32_t Freq_Legal_Max;
-    uint32_t Freq_Default;
-    uint32_t Freq_StartUp;
-};
-
-struct CountryFrequencyList_t {
-    CountryModeId_t mode;
-    CountryFrequencyDefinition_t definition;
-};
-
-class HoymilesRadio_CMT : public HoymilesRadio {
+class HoymilesRadio_CMT : public HoymilesRadio_SubGhz {
 public:
     void init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin_cs, const int8_t pin_fcs, const int8_t pin_gpio2, const int8_t pin_gpio3);
     void loop();
-    void setPALevel(const int8_t paLevel);
-    void setInverterTargetFrequency(const uint32_t frequency);
-    uint32_t getInverterTargetFrequency() const;
+    void setPALevel(const int8_t paLevel) override;
+    void setInverterTargetFrequency(const uint32_t frequency) override;
+    uint32_t getInverterTargetFrequency() const override;
 
-    bool isConnected() const;
+    bool isConnected() const override;
 
-    uint32_t getMinFrequency() const;
-    uint32_t getMaxFrequency() const;
+    uint32_t getMinFrequency() const override;
+    uint32_t getMaxFrequency() const override;
     static constexpr uint32_t getChannelWidth()
     {
         return FH_OFFSET * CMT2300A_ONE_STEP_SIZE;
     }
 
-    CountryModeId_t getCountryMode() const;
-    void setCountryMode(const CountryModeId_t mode);
+    CountryModeId_t getCountryMode() const override;
+    void setCountryMode(const CountryModeId_t mode) override;
 
-    uint32_t getInvBootFrequency() const;
+    uint32_t getInvBootFrequency() const override;
 
-    uint32_t getFrequencyFromChannel(const uint8_t channel) const;
-    uint8_t getChannelFromFrequency(const uint32_t frequency) const;
+    uint32_t getFrequencyFromChannel(const uint8_t channel) const override;
+    uint8_t getChannelFromFrequency(const uint32_t frequency) const override;
 
-    std::vector<CountryFrequencyList_t> getCountryFrequencyList() const;
+    std::vector<CountryFrequencyList_t> getCountryFrequencyList() const override;
 
 private:
     void ARDUINO_ISR_ATTR handleInt1();
     void ARDUINO_ISR_ATTR handleInt2();
 
-    void sendEsbPacket(CommandAbstract& cmd);
+    void sendEsbPacket(CommandAbstract& cmd) override;
 
     std::unique_ptr<CMT2300A> _radio;
 

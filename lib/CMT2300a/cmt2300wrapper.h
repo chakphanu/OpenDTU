@@ -1,20 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #pragma once
 
+#include <HoymilesProtocol.h>
 #include <stdint.h>
 
-#define CMT2300A_ONE_STEP_SIZE 2500 // frequency channel step size for fast frequency hopping operation: One step size is 2.5 kHz.
-#define FH_OFFSET 100 // value * CMT2300A_ONE_STEP_SIZE = channel frequency offset
+// Legacy aliases for backward compatibility within CMT2300A driver
+#define CMT2300A_ONE_STEP_SIZE HOYMILES_FH_STEP_SIZE
+#define FH_OFFSET HOYMILES_FH_OFFSET
 #define CMT_SPI_SPEED 4000000 // 4 MHz
 
 #define CMT_BASE_FREQ_900 900000000
 #define CMT_BASE_FREQ_860 860000000
-
-enum FrequencyBand_t {
-    BAND_860,
-    BAND_900,
-    FrequencyBand_Max,
-};
 
 class CMT2300A {
 public:

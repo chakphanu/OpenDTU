@@ -3,8 +3,7 @@
  * Copyright (C) 2023-2025 Thomas Basler and others
  */
 #include "HMS_Abstract.h"
-#include "Hoymiles.h"
-#include "HoymilesRadio_CMT.h"
+#include "HoymilesRadio_SubGhz.h"
 #include "commands/ChannelChangeCommand.h"
 
 HMS_Abstract::HMS_Abstract(HoymilesRadio* radio, const uint64_t serial)
@@ -18,9 +17,10 @@ bool HMS_Abstract::sendChangeChannelRequest()
         return false;
     }
 
+    auto* radio = static_cast<HoymilesRadio_SubGhz*>(_radio);
     auto cmdChannel = _radio->prepareCommand<ChannelChangeCommand>(this);
-    cmdChannel->setCountryMode(Hoymiles.getRadioCmt()->getCountryMode());
-    cmdChannel->setChannel(Hoymiles.getRadioCmt()->getChannelFromFrequency(Hoymiles.getRadioCmt()->getInverterTargetFrequency()));
+    cmdChannel->setCountryMode(radio->getCountryMode());
+    cmdChannel->setChannel(radio->getChannelFromFrequency(radio->getInverterTargetFrequency()));
     _radio->enqueCommand(cmdChannel);
 
     return true;

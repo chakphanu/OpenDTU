@@ -15,8 +15,8 @@ static const char* TAG = "hoymiles";
 
 constexpr CountryFrequencyDefinition_t make_value(FrequencyBand_t Band, uint32_t Freq_Legal_Min, uint32_t Freq_Legal_Max, uint32_t Freq_Default, uint32_t Freq_StartUp)
 {
-    // frequency can not be lower than actual initailized base freq + 250000
-    uint32_t minFrequency = CMT2300A::getBaseFrequency(Band) + HoymilesRadio_CMT::getChannelWidth();
+    // frequency can not be lower than actual initailized base freq (channel 0)
+    uint32_t minFrequency = CMT2300A::getBaseFrequency(Band);
 
     // =923500, 0xFF does not work
     uint32_t maxFrequency = CMT2300A::getBaseFrequency(Band) + 0xFE * HoymilesRadio_CMT::getChannelWidth();
