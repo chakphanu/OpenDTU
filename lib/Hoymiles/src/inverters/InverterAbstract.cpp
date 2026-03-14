@@ -300,4 +300,6 @@ void InverterAbstract::performDailyTask()
 void InverterAbstract::resetRadioStats()
 {
     RadioStats = {};
+    RadioStats.LastHopPattern = -1;
+    RadioStats.PredictedHopPattern = -1;
 }

@@ -303,12 +303,45 @@
                                                         <td></td>
                                                     </tr>
                                                     <tr>
+                                                        <td>{{ $t('home.D6Sent') }}</td>
+                                                        <td>{{ $n(inverter.radio_stats.d6_tx) }}</td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>{{ $t('home.D6Received') }}</td>
+                                                        <td>{{ $n(inverter.radio_stats.d6_rx) }}</td>
+                                                        <td>
+                                                            {{
+                                                                ratio(
+                                                                    inverter.radio_stats.d6_rx,
+                                                                    inverter.radio_stats.d6_tx
+                                                                )
+                                                            }}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
                                                         <td>
                                                             {{ $t('home.Rssi') }}
                                                             <BIconInfoCircle v-tooltip :title="$t('home.RssiHint')" />
                                                         </td>
                                                         <td>
                                                             {{ $t('home.dBm', { dbm: $n(inverter.radio_stats.rssi) }) }}
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>{{ $t('home.HopPattern') }}</td>
+                                                        <td>
+                                                            {{ formatHopPattern(inverter.radio_stats.last_hop_pattern) }}
+                                                            &gt;
+                                                            {{ formatHopPattern(inverter.radio_stats.predicted_hop_pattern) }}
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>{{ $t('home.LastBurst') }}</td>
+                                                        <td>
+                                                            {{ inverter.radio_stats.last_burst_rx }} / {{ inverter.radio_stats.last_frag_count }} rx
                                                         </td>
                                                         <td></td>
                                                     </tr>
@@ -954,6 +987,12 @@ export default defineComponent({
                 return '-';
             }
             return this.$n(val_small / val_large, 'percent');
+        },
+        formatHopPattern(pattern: number): string {
+            if (pattern < 0 || pattern > 2) {
+                return '---';
+            }
+            return 'P' + (pattern + 1);
         },
     },
 });

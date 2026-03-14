@@ -17,4 +17,10 @@ export interface DtuConfig {
     cmt_country: number;
     country_def: Array<CountryDef>;
     cmt_chan_width: number;
+    sx1262_enabled: boolean;
+    sx1262_palevel: number;
+    sx1262_frequency: number;
+    sx1262_country: number;
+    sx1262_chan_width: number;
+    sx1262_country_def: Array<CountryDef>;
 }

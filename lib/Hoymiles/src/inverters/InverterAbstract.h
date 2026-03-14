@@ -89,6 +89,18 @@ public:
 
         // RX Fail Corrupt Data
         uint32_t RxFailCorruptData;
+
+        // ChannelChange (D6) counters
+        uint32_t TxD6Sent;
+        uint32_t RxD6Received;
+        uint32_t LastD6SentMs;
+        uint32_t LastD6ReceivedMs;
+
+        // Per-inverter hop tracking
+        int8_t LastHopPattern;      // last detected hop pattern (0=P1, 1=P2, 2=P3, -1=unknown)
+        int8_t PredictedHopPattern; // predicted next hop pattern
+        uint8_t LastFragCount;      // fragment count from last burst
+        uint8_t LastBurstRxCount;   // fragments actually received in last burst
     } RadioStats = {};
 
     virtual bool sendStatsRequest() = 0;

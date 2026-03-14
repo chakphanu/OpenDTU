@@ -28,7 +28,15 @@ export interface RadioStatistics {
     rx_fail_nothing: number;
     rx_fail_partial: number;
     rx_fail_corrupt: number;
+    d6_tx: number;
+    d6_rx: number;
+    d6_last_tx_ms: number;
+    d6_last_rx_ms: number;
     rssi: number;
+    last_hop_pattern: number;
+    predicted_hop_pattern: number;
+    last_frag_count: number;
+    last_burst_rx: number;
 }
 
 export interface Inverter {

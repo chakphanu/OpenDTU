@@ -84,6 +84,60 @@
                             </span>
                         </td>
                     </tr>
+                    <tr>
+                        <th>{{ $t('radioinfo.Status', { module: 'SX1262' }) }}</th>
+                        <td>
+                            <StatusBadge
+                                :status="systemStatus.sx1262_configured"
+                                true_text="radioinfo.Configured"
+                                false_text="radioinfo.NotConfigured"
+                                false_class="text-bg-secondary"
+                            />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ $t('radioinfo.ChipStatus', { module: 'SX1262' }) }}</th>
+                        <td>
+                            <span
+                                class="badge"
+                                :class="{
+                                    'text-bg-danger': systemStatus.sx1262_configured && !systemStatus.sx1262_connected,
+                                    'text-bg-success': systemStatus.sx1262_configured && systemStatus.sx1262_connected,
+                                }"
+                            >
+                                <template v-if="systemStatus.sx1262_configured && systemStatus.sx1262_connected">{{
+                                    $t('radioinfo.Connected')
+                                }}</template>
+                                <template
+                                    v-else-if="systemStatus.sx1262_configured && !systemStatus.sx1262_connected"
+                                    >{{ $t('radioinfo.NotConnected') }}</template
+                                >
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ $t('radioinfo.ChipType', { module: 'SX1262' }) }}</th>
+                        <td>
+                            <span
+                                class="badge"
+                                :class="{
+                                    'text-bg-success': systemStatus.sx1262_connected,
+                                    'text-bg-secondary': !systemStatus.sx1262_connected,
+                                }"
+                            >
+                                <template v-if="systemStatus.sx1262_connected">SX1262</template>
+                                <template v-else>{{ $t('radioinfo.Unknown') }}</template>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr v-if="systemStatus.sx1262_configured">
+                        <th>SX1262 Frequency</th>
+                        <td>{{ (systemStatus.sx1262_frequency / 1000000).toFixed(2) }} MHz</td>
+                    </tr>
+                    <tr v-if="systemStatus.sx1262_configured">
+                        <th>SX1262 RX Bandwidth</th>
+                        <td>156.2 kHz</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

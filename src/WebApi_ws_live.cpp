@@ -131,7 +131,9 @@ void WebApiWsLiveClass::generateCommonJsonResponse(JsonVariant& root)
     JsonObject hintObj = root["hints"].to<JsonObject>();
     struct tm timeinfo;
     hintObj["time_sync"] = !getLocalTime(&timeinfo, 5);
-    hintObj["radio_problem"] = (Hoymiles.getRadioNrf()->isInitialized() && (!Hoymiles.getRadioNrf()->isConnected() || !Hoymiles.getRadioNrf()->isPVariant())) || (Hoymiles.getRadioCmt()->isInitialized() && (!Hoymiles.getRadioCmt()->isConnected()));
+    hintObj["radio_problem"] = (Hoymiles.getRadioNrf()->isInitialized() && (!Hoymiles.getRadioNrf()->isConnected() || !Hoymiles.getRadioNrf()->isPVariant()))
+        || (Hoymiles.getRadioCmt()->isInitialized() && (!Hoymiles.getRadioCmt()->isConnected()))
+        || (Hoymiles.getRadioSx1262()->isInitialized() && (!Hoymiles.getRadioSx1262()->isConnected()));
     hintObj["default_password"] = strcmp(Configuration.get().Security.Password, ACCESS_POINT_PASSWORD) == 0;
 
     hintObj["pin_mapping_issue"] = PIN_MAPPING_REQUIRED && !PinMapping.isMappingSelected();
@@ -164,7 +166,15 @@ void WebApiWsLiveClass::generateInverterCommonJsonResponse(JsonObject& root, std
     root["radio_stats"]["rx_fail_nothing"] = inv->RadioStats.RxFailNoAnswer;
     root["radio_stats"]["rx_fail_partial"] = inv->RadioStats.RxFailPartialAnswer;
     root["radio_stats"]["rx_fail_corrupt"] = inv->RadioStats.RxFailCorruptData;
+    root["radio_stats"]["d6_tx"] = inv->RadioStats.TxD6Sent;
+    root["radio_stats"]["d6_rx"] = inv->RadioStats.RxD6Received;
+    root["radio_stats"]["d6_last_tx_ms"] = inv->RadioStats.LastD6SentMs;
+    root["radio_stats"]["d6_last_rx_ms"] = inv->RadioStats.LastD6ReceivedMs;
     root["radio_stats"]["rssi"] = inv->getLastRssi();
+    root["radio_stats"]["last_hop_pattern"] = inv->RadioStats.LastHopPattern;
+    root["radio_stats"]["predicted_hop_pattern"] = inv->RadioStats.PredictedHopPattern;
+    root["radio_stats"]["last_frag_count"] = inv->RadioStats.LastFragCount;
+    root["radio_stats"]["last_burst_rx"] = inv->RadioStats.LastBurstRxCount;
 }
 
 void WebApiWsLiveClass::generateInverterChannelJsonResponse(JsonObject& root, std::shared_ptr<InverterAbstract> inv)

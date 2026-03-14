@@ -3,6 +3,8 @@
 
 #include "HoymilesRadio_CMT.h"
 #include "HoymilesRadio_NRF.h"
+#include "HoymilesRadio_SX1262.h"
+#include "HoymilesRadio_SubGhz.h"
 #include "inverters/InverterAbstract.h"
 #include "types.h"
 #include <Print.h>
@@ -18,6 +20,7 @@ public:
     void init();
     void initNRF(SPIClass* initialisedSpiBus, const uint8_t pinCE, const uint8_t pinIRQ);
     void initCMT(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin_cs, const int8_t pin_fcs, const int8_t pin_gpio2, const int8_t pin_gpio3);
+    void initSX1262(SPIClass* initialisedSpiBus, const uint8_t pinCS, const uint8_t pinBusy, const int8_t pinReset, const int8_t pinIrq);
     void loop();
 
     std::shared_ptr<InverterAbstract> addInverter(const char* name, const uint64_t serial);
@@ -29,6 +32,8 @@ public:
 
     HoymilesRadio_NRF* getRadioNrf();
     HoymilesRadio_CMT* getRadioCmt();
+    HoymilesRadio_SX1262* getRadioSx1262();
+    HoymilesRadio_SubGhz* getRadioSubGhz();
 
     uint32_t PollInterval() const;
     void setPollInterval(const uint32_t interval);
@@ -39,6 +44,7 @@ private:
     std::vector<std::shared_ptr<InverterAbstract>> _inverters;
     std::unique_ptr<HoymilesRadio_NRF> _radioNrf;
     std::unique_ptr<HoymilesRadio_CMT> _radioCmt;
+    std::unique_ptr<HoymilesRadio_SX1262> _radioSx1262;
 
     std::mutex _mutex;
 

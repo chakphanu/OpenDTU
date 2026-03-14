@@ -6,6 +6,7 @@
 #include "Configuration.h"
 #include "PinMapping.h"
 #include "SunPosition.h"
+#include <HoymilesRadio_SX1262.h>
 #include <Hoymiles.h>
 #include <SpiManager.h>
 
@@ -29,7 +30,7 @@ void InverterSettingsClass::init(Scheduler& scheduler)
     ESP_LOGI(TAG, "Initialize Hoymiles interface...");
     Hoymiles.init();
 
-    if (!PinMapping.isValidNrf24Config() && !PinMapping.isValidCmt2300Config()) {
+    if (!PinMapping.isValidNrf24Config() && !PinMapping.isValidCmt2300Config() && !PinMapping.isValidSx1262Config()) {
         ESP_LOGE(TAG, "Invalid pin config");
         return;
     }
@@ -55,14 +56,31 @@ void InverterSettingsClass::init(Scheduler& scheduler)
         Hoymiles.getRadioCmt()->setInverterTargetFrequency(config.Dtu.Cmt.Frequency);
     }
 
+    // Initialize SX1262 if configured
+    if (PinMapping.isValidSx1262Config()) {
+        ESP_LOGI(TAG, "SX1262: Initialize communication");
+        auto spi_bus = SpiManagerInst.claim_bus_arduino();
+        ESP_ERROR_CHECK(spi_bus ? ESP_OK : ESP_FAIL);
+
+        SPIClass* spiClass = new SPIClass(*spi_bus);
+        spiClass->begin(pin.sx1262_clk, pin.sx1262_miso, pin.sx1262_mosi, pin.sx1262_cs);
+        Hoymiles.initSX1262(spiClass, pin.sx1262_cs, pin.sx1262_busy, pin.sx1262_rst, pin.sx1262_irq);
+        ESP_LOGI(TAG, "SX1262: Setting country mode...");
+        Hoymiles.getRadioSx1262()->setCountryMode(static_cast<CountryModeId_t>(config.Dtu.Sx1262.CountryMode));
+        ESP_LOGI(TAG, "SX1262: Setting target frequency...");
+        Hoymiles.getRadioSx1262()->setInverterTargetFrequency(config.Dtu.Sx1262.Frequency);
+    }
+
     // Configure common radio settings
     ESP_LOGI(TAG, "RF: Setting radio PA level...");
     Hoymiles.getRadioNrf()->setPALevel((rf24_pa_dbm_e)config.Dtu.Nrf.PaLevel);
     Hoymiles.getRadioCmt()->setPALevel(config.Dtu.Cmt.PaLevel);
+    Hoymiles.getRadioSx1262()->setPALevel(config.Dtu.Sx1262.PaLevel);
 
     ESP_LOGI(TAG, "RF: Setting DTU serial...");
     Hoymiles.getRadioNrf()->setDtuSerial(config.Dtu.Serial);
     Hoymiles.getRadioCmt()->setDtuSerial(config.Dtu.Serial);
+    Hoymiles.getRadioSx1262()->setDtuSerial(config.Dtu.Serial);
 
     ESP_LOGI(TAG, "RF: Setting poll interval...");
     Hoymiles.setPollInterval(config.Dtu.PollInterval);

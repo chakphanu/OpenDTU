@@ -46,4 +46,7 @@ export interface SystemStatus {
     nrf_pvariant: boolean;
     cmt_configured: boolean;
     cmt_connected: boolean;
+    sx1262_configured: boolean;
+    sx1262_connected: boolean;
+    sx1262_frequency: number;
 }

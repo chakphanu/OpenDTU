@@ -55,7 +55,7 @@
                                 class="form-control form-range"
                                 v-model.number="dtuConfigList.cmt_palevel"
                                 min="-10"
-                                max="20"
+                                max="22"
                                 id="inputCmtPaLevel"
                                 aria-describedby="basic-addon1"
                                 style="height: unset"
@@ -113,6 +113,86 @@
                     </div>
                 </div>
             </CardElement>
+
+            <CardElement
+                :text="$t('dtuadmin.Sx1262Configuration')"
+                textVariant="text-bg-primary"
+                v-if="dtuConfigList.sx1262_enabled"
+            >
+                <div class="row mb-3">
+                    <label for="inputSx1262PaLevel" class="col-sm-2 col-form-label">
+                        {{ $t('dtuadmin.Sx1262PaLevel') }}
+                        <BIconInfoCircle v-tooltip :title="$t('dtuadmin.Sx1262PaLevelHint')" />
+                    </label>
+                    <div class="col-sm-10">
+                        <div class="input-group">
+                            <input
+                                type="range"
+                                class="form-control form-range"
+                                v-model.number="dtuConfigList.sx1262_palevel"
+                                min="-10"
+                                max="22"
+                                id="inputSx1262PaLevel"
+                                style="height: unset"
+                            />
+                            <span class="input-group-text">{{ sx1262PaLevelText }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <label for="inputSx1262Country" class="col-sm-2 col-form-label">
+                        {{ $t('dtuadmin.Sx1262Country') }}
+                        <BIconInfoCircle v-tooltip :title="$t('dtuadmin.Sx1262CountryHint')" />
+                    </label>
+                    <div class="col-sm-10">
+                        <select id="inputSx1262Country" class="form-select" v-model="dtuConfigList.sx1262_country">
+                            <option
+                                v-for="(country, index) in dtuConfigList.sx1262_country_def"
+                                :key="index"
+                                :value="index"
+                            >
+                                {{
+                                    $t(`dtuadmin.country_` + index, {
+                                        min: country.freq_min / 1e6,
+                                        max: country.freq_max / 1e6,
+                                    })
+                                }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <label for="sx1262Frequency" class="col-sm-2 col-form-label">
+                        {{ $t('dtuadmin.Sx1262Frequency') }}
+                        <BIconInfoCircle v-tooltip :title="$t('dtuadmin.Sx1262FrequencyHint')" />
+                    </label>
+                    <div class="col-sm-10">
+                        <div class="input-group">
+                            <input
+                                type="range"
+                                class="form-control form-range"
+                                v-model.number="dtuConfigList.sx1262_frequency"
+                                :min="sx1262MinFrequency"
+                                :max="sx1262MaxFrequency"
+                                :step="dtuConfigList.sx1262_chan_width"
+                                id="sx1262Frequency"
+                                style="height: unset"
+                            />
+                            <span class="input-group-text">{{ sx1262FrequencyText }}</span>
+                        </div>
+                        <div
+                            class="alert alert-danger"
+                            role="alert"
+                            v-html="$t('dtuadmin.Sx1262FrequencyWarning')"
+                            v-if="sx1262IsOutOfLegalRange"
+                        ></div>
+                    </div>
+                </div>
+
+            </CardElement>
+
             <FormFooter @reload="getDtuConfig" />
         </form>
     </BasePage>
@@ -180,6 +260,30 @@ export default defineComponent({
                 this.dtuConfigList.cmt_frequency > country.freq_legal_max
             );
         },
+        sx1262FrequencyText() {
+            return this.$t('dtuadmin.MHz', {
+                mhz: this.$n(this.dtuConfigList.sx1262_frequency / 1000000, 'decimalTwoDigits'),
+            });
+        },
+        sx1262PaLevelText() {
+            return this.$t('dtuadmin.dBm', { dbm: this.$n(this.dtuConfigList.sx1262_palevel * 1) });
+        },
+        sx1262MinFrequency() {
+            return this.dtuConfigList.sx1262_country_def?.[this.dtuConfigList.sx1262_country]?.freq_min;
+        },
+        sx1262MaxFrequency() {
+            return this.dtuConfigList.sx1262_country_def?.[this.dtuConfigList.sx1262_country]?.freq_max;
+        },
+        sx1262IsOutOfLegalRange() {
+            const country = this.dtuConfigList.sx1262_country_def?.[this.dtuConfigList.sx1262_country];
+            if (!country) {
+                return false;
+            }
+            return (
+                this.dtuConfigList.sx1262_frequency < country.freq_legal_min ||
+                this.dtuConfigList.sx1262_frequency > country.freq_legal_max
+            );
+        },
     },
     watch: {
         'dtuConfigList.cmt_country'(newValue, oldValue) {
@@ -188,6 +292,16 @@ export default defineComponent({
                 this.$nextTick(() => {
                     if (this.dtuConfigList.country_def[newValue]) {
                         this.dtuConfigList.cmt_frequency = this.dtuConfigList.country_def[newValue].freq_default;
+                    }
+                });
+            }
+        },
+        'dtuConfigList.sx1262_country'(newValue, oldValue) {
+            if (oldValue != undefined) {
+                this.$nextTick(() => {
+                    if (this.dtuConfigList.sx1262_country_def[newValue]) {
+                        this.dtuConfigList.sx1262_frequency =
+                            this.dtuConfigList.sx1262_country_def[newValue].freq_default;
                     }
                 });
             }

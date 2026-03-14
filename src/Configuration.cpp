@@ -111,7 +111,9 @@ bool ConfigurationClass::write()
     dtu["cmt_pa_level"] = config.Dtu.Cmt.PaLevel;
     dtu["cmt_frequency"] = config.Dtu.Cmt.Frequency;
     dtu["cmt_country_mode"] = config.Dtu.Cmt.CountryMode;
-
+    dtu["sx1262_pa_level"] = config.Dtu.Sx1262.PaLevel;
+    dtu["sx1262_frequency"] = config.Dtu.Sx1262.Frequency;
+    dtu["sx1262_country_mode"] = config.Dtu.Sx1262.CountryMode;
     JsonObject security = doc["security"].to<JsonObject>();
     security["password"] = config.Security.Password;
     security["allow_readonly"] = config.Security.AllowReadonly;
@@ -301,6 +303,9 @@ bool ConfigurationClass::read()
     config.Dtu.Cmt.PaLevel = dtu["cmt_pa_level"] | DTU_CMT_PA_LEVEL;
     config.Dtu.Cmt.Frequency = dtu["cmt_frequency"] | DTU_CMT_FREQUENCY;
     config.Dtu.Cmt.CountryMode = dtu["cmt_country_mode"] | DTU_CMT_COUNTRY_MODE;
+    config.Dtu.Sx1262.PaLevel = dtu["sx1262_pa_level"] | DTU_SX1262_PA_LEVEL;
+    config.Dtu.Sx1262.Frequency = dtu["sx1262_frequency"] | DTU_SX1262_FREQUENCY;
+    config.Dtu.Sx1262.CountryMode = dtu["sx1262_country_mode"] | DTU_SX1262_COUNTRY_MODE;
 
     JsonObject security = doc["security"];
     strlcpy(config.Security.Password, security["password"] | ACCESS_POINT_PASSWORD, sizeof(config.Security.Password));
@@ -459,6 +464,13 @@ void ConfigurationClass::migrate()
         config.Logging.Default = ESP_LOG_VERBOSE;
         strlcpy(config.Logging.Modules[0].Name, "CORE", sizeof(config.Logging.Modules[0].Name));
         config.Logging.Modules[0].Level = ESP_LOG_ERROR;
+    }
+
+    if (config.Cfg.Version < 0x00011f00) {
+        // Initialize SX1262 config from CMT config for existing installations
+        config.Dtu.Sx1262.PaLevel = DTU_SX1262_PA_LEVEL;
+        config.Dtu.Sx1262.Frequency = config.Dtu.Cmt.Frequency;
+        config.Dtu.Sx1262.CountryMode = config.Dtu.Cmt.CountryMode;
     }
 
     f.close();

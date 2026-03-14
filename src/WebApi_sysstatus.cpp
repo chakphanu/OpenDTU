@@ -93,5 +93,9 @@ void WebApiSysstatusClass::onSystemStatus(AsyncWebServerRequest* request)
     root["cmt_configured"] = PinMapping.isValidCmt2300Config();
     root["cmt_connected"] = Hoymiles.getRadioCmt()->isConnected();
 
+    root["sx1262_configured"] = PinMapping.isValidSx1262Config();
+    root["sx1262_connected"] = Hoymiles.getRadioSx1262()->isConnected();
+    root["sx1262_frequency"] = Hoymiles.getRadioSx1262()->getCurrentFrequency();
+
     WebApi.sendJsonResponse(request, response, __FUNCTION__, __LINE__);
 }

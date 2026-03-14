@@ -8,6 +8,7 @@
 #include "WebApi_errors.h"
 #include <AsyncJson.h>
 #include <Hoymiles.h>
+#include <HoymilesRadio_SX1262.h>
 
 WebApiDtuClass::WebApiDtuClass()
     : _applyDataTask(TASK_IMMEDIATE, TASK_ONCE, std::bind(&WebApiDtuClass::applyDataTaskCb, this))
@@ -30,10 +31,14 @@ void WebApiDtuClass::applyDataTaskCb()
     auto const& config = Configuration.get();
     Hoymiles.getRadioNrf()->setPALevel((rf24_pa_dbm_e)config.Dtu.Nrf.PaLevel);
     Hoymiles.getRadioCmt()->setPALevel(config.Dtu.Cmt.PaLevel);
+    Hoymiles.getRadioSx1262()->setPALevel(config.Dtu.Sx1262.PaLevel);
     Hoymiles.getRadioNrf()->setDtuSerial(config.Dtu.Serial);
     Hoymiles.getRadioCmt()->setDtuSerial(config.Dtu.Serial);
+    Hoymiles.getRadioSx1262()->setDtuSerial(config.Dtu.Serial);
     Hoymiles.getRadioCmt()->setCountryMode(static_cast<CountryModeId_t>(config.Dtu.Cmt.CountryMode));
+    Hoymiles.getRadioSx1262()->setCountryMode(static_cast<CountryModeId_t>(config.Dtu.Sx1262.CountryMode));
     Hoymiles.getRadioCmt()->setInverterTargetFrequency(config.Dtu.Cmt.Frequency);
+    Hoymiles.getRadioSx1262()->setInverterTargetFrequency(config.Dtu.Sx1262.Frequency);
     Hoymiles.setPollInterval(config.Dtu.PollInterval);
 }
 
@@ -61,6 +66,23 @@ void WebApiDtuClass::onDtuAdminGet(AsyncWebServerRequest* request)
     root["cmt_frequency"] = config.Dtu.Cmt.Frequency;
     root["cmt_country"] = config.Dtu.Cmt.CountryMode;
     root["cmt_chan_width"] = Hoymiles.getRadioCmt()->getChannelWidth();
+
+    root["sx1262_enabled"] = Hoymiles.getRadioSx1262()->isInitialized();
+    root["sx1262_palevel"] = config.Dtu.Sx1262.PaLevel;
+    root["sx1262_frequency"] = config.Dtu.Sx1262.Frequency;
+    root["sx1262_country"] = config.Dtu.Sx1262.CountryMode;
+    root["sx1262_chan_width"] = Hoymiles.getRadioSx1262()->getChannelWidth();
+
+    auto sx1262CountryData = root["sx1262_country_def"].to<JsonArray>();
+    auto sx1262CountryDefs = Hoymiles.getRadioSx1262()->getCountryFrequencyList();
+    for (const auto& definition : sx1262CountryDefs) {
+        auto obj = sx1262CountryData.add<JsonObject>();
+        obj["freq_default"] = definition.definition.Freq_Default;
+        obj["freq_min"] = definition.definition.Freq_Min;
+        obj["freq_max"] = definition.definition.Freq_Max;
+        obj["freq_legal_min"] = definition.definition.Freq_Legal_Min;
+        obj["freq_legal_max"] = definition.definition.Freq_Legal_Max;
+    }
 
     auto data = root["country_def"].to<JsonArray>();
     auto countryDefs = Hoymiles.getRadioCmt()->getCountryFrequencyList();
@@ -126,7 +148,7 @@ void WebApiDtuClass::onDtuAdminPost(AsyncWebServerRequest* request)
         return;
     }
 
-    if (root["cmt_palevel"].as<int8_t>() < -10 || root["cmt_palevel"].as<int8_t>() > 20) {
+    if (root["cmt_palevel"].as<int8_t>() < -10 || root["cmt_palevel"].as<int8_t>() > 22) {
         retMsg["message"] = "Invalid power level setting!";
         retMsg["code"] = WebApiError::DtuInvalidPowerLevel;
         WebApi.sendJsonResponse(request, response, __FUNCTION__, __LINE__);
@@ -153,15 +175,75 @@ void WebApiDtuClass::onDtuAdminPost(AsyncWebServerRequest* request)
         return;
     }
 
+    if (root["sx1262_country"].is<uint8_t>()
+        && root["sx1262_country"].as<uint8_t>() >= CountryModeId_t::CountryModeId_Max) {
+        retMsg["message"] = "Invalid country setting!";
+        retMsg["code"] = WebApiError::DtuInvalidCmtCountry;
+        WebApi.sendJsonResponse(request, response, __FUNCTION__, __LINE__);
+        return;
+    }
+
     {
         auto guard = Configuration.getWriteGuard();
         auto& config = guard.getConfig();
+
+        /* SX1262 validation */
+
+        if (root["sx1262_palevel"].is<int8_t>()) {
+            int8_t pa = root["sx1262_palevel"].as<int8_t>();
+            if (pa < -10 || pa > 22) {
+                retMsg["message"] = "Invalid power level setting!";
+                retMsg["code"] = WebApiError::DtuInvalidPowerLevel;
+                WebApi.sendJsonResponse(request, response, __FUNCTION__, __LINE__);
+                return;
+            }
+        }
+
+        CountryModeId_t sxCountry =
+            static_cast<CountryModeId_t>(
+                root["sx1262_country"].is<uint8_t>()
+                    ? root["sx1262_country"].as<uint8_t>()
+                    : config.Dtu.Sx1262.CountryMode);
+
+        if (root["sx1262_frequency"].is<uint32_t>()) {
+
+            auto sx1262Radio = Hoymiles.getRadioSx1262();
+            if (sx1262Radio != nullptr) {
+
+                const uint32_t sxFreq = root["sx1262_frequency"].as<uint32_t>();
+                auto sxFreqDef = sx1262Radio->getCountryFrequencyList()[sxCountry].definition;
+
+                if (sxFreq < sxFreqDef.Freq_Min
+                    || sxFreq > sxFreqDef.Freq_Max
+                    || ((sxFreq - sxFreqDef.Freq_Min)
+                        % HoymilesRadio_SX1262::getChannelWidth()) != 0) {
+
+                    retMsg["message"] = "Invalid SX1262 frequency setting!";
+                    retMsg["code"] = WebApiError::DtuInvalidCmtFrequency;
+                    retMsg["param"]["min"] = sxFreqDef.Freq_Min;
+                    retMsg["param"]["max"] = sxFreqDef.Freq_Max;
+                    WebApi.sendJsonResponse(request, response, __FUNCTION__, __LINE__);
+                    return;
+                }
+            }
+        }
+
         config.Dtu.Serial = serial;
         config.Dtu.PollInterval = root["pollinterval"].as<uint32_t>();
         config.Dtu.Nrf.PaLevel = root["nrf_palevel"].as<uint8_t>();
         config.Dtu.Cmt.PaLevel = root["cmt_palevel"].as<int8_t>();
         config.Dtu.Cmt.Frequency = root["cmt_frequency"].as<uint32_t>();
         config.Dtu.Cmt.CountryMode = root["cmt_country"].as<CountryModeId_t>();
+
+        if (root["sx1262_palevel"].is<int8_t>()) {
+            config.Dtu.Sx1262.PaLevel = root["sx1262_palevel"].as<int8_t>();
+        }
+        if (root["sx1262_frequency"].is<uint32_t>()) {
+            config.Dtu.Sx1262.Frequency = root["sx1262_frequency"].as<uint32_t>();
+        }
+        if (root["sx1262_country"].is<uint8_t>()) {
+            config.Dtu.Sx1262.CountryMode = root["sx1262_country"].as<uint8_t>();
+        }
     }
 
     WebApi.writeConfig(retMsg);
@@ -171,3 +253,4 @@ void WebApiDtuClass::onDtuAdminPost(AsyncWebServerRequest* request)
     _applyDataTask.enable();
     _applyDataTask.restart();
 }
+

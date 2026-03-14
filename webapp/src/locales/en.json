@@ -162,11 +162,15 @@
         "RxFailPartial": "RX Fail: Receive Partial",
         "RxFailCorrupt": "RX Fail: Receive Corrupt",
         "TxReRequest": "TX Re-Request Fragment",
+        "D6Sent": "D6 ChannelChange TX",
+        "D6Received": "D6 ChannelChange RX",
         "StatsReset": "Reset Statistics",
         "StatsResetting": "Resetting...",
         "Rssi": "RSSI of last received packet",
         "RssiHint": "HM inverters only support RSSI values < -64 dBm and > -64 dBm. In this case, -80 dbm and -30 dbm is shown.",
-        "dBm": "{dbm} dBm"
+        "dBm": "{dbm} dBm",
+        "HopPattern": "Hop Pattern",
+        "LastBurst": "Last Burst"
     },
     "eventlog": {
         "Start": "Start",
@@ -419,6 +423,7 @@
         "country_0": "Europe ({min}MHz - {max}MHz)",
         "country_1": "North America ({min}MHz - {max}MHz)",
         "country_2": "Brazil ({min}MHz - {max}MHz)",
+        "country_3": "Thailand ({min}MHz - {max}MHz)",
         "CmtFrequency": "CMT2300A Frequency",
         "CmtFrequencyHint": "Make sure to only use frequencies that are allowed in the respective country! After a frequency change, it can take up to 15min until a connection is established.",
         "CmtFrequencyWarning": "The selected frequency is outside the allowed range in your selected region/country. Make sure that this selection does not violate any local regulations.",
@@ -427,7 +432,15 @@
         "Min": "Minimum ({db} dBm)",
         "Low": "Low ({db} dBm)",
         "High": "High ({db} dBm)",
-        "Max": "Maximum ({db} dBm)"
+        "Max": "Maximum ({db} dBm)",
+        "Sx1262Configuration": "SX1262 Radio Configuration",
+        "Sx1262PaLevel": "SX1262 Transmitting power",
+        "Sx1262PaLevelHint": "Used for HMS/HMT-Inverters with SX1262 radio. Make sure your power supply is stable enough before increasing the transmit power.",
+        "Sx1262Country": "SX1262 Region/Country",
+        "Sx1262CountryHint": "Each country has different frequency allocations.",
+        "Sx1262Frequency": "SX1262 Target Frequency",
+        "Sx1262FrequencyHint": "Make sure to only use frequencies that are allowed in the respective country! After a frequency change, it can take up to 15min until a connection is established.",
+        "Sx1262FrequencyWarning": "The selected frequency is outside the allowed range in your selected region/country. Make sure that this selection does not violate any local regulations."
     },
     "securityadmin": {
         "SecuritySettings": "Security Settings",

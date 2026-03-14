@@ -3,6 +3,7 @@
  * Copyright (C) 2022-2025 Thomas Basler and others
  */
 #include "Hoymiles.h"
+#include "HoymilesRadio_SX1262.h"
 #include "Utils.h"
 #include "inverters/HERF_1CH.h"
 #include "inverters/HERF_2CH.h"
@@ -29,6 +30,7 @@ void HoymilesClass::init()
     _pollInterval = 0;
     _radioNrf.reset(new HoymilesRadio_NRF());
     _radioCmt.reset(new HoymilesRadio_CMT());
+    _radioSx1262.reset(new HoymilesRadio_SX1262());
 }
 
 void HoymilesClass::initNRF(SPIClass* initialisedSpiBus, const uint8_t pinCE, const uint8_t pinIRQ)
@@ -41,11 +43,17 @@ void HoymilesClass::initCMT(const int8_t pin_sdio, const int8_t pin_clk, const i
     _radioCmt->init(pin_sdio, pin_clk, pin_cs, pin_fcs, pin_gpio2, pin_gpio3);
 }
 
+void HoymilesClass::initSX1262(SPIClass* initialisedSpiBus, const uint8_t pinCS, const uint8_t pinBusy, const int8_t pinReset, const int8_t pinIrq)
+{
+    _radioSx1262->init(initialisedSpiBus, pinCS, pinBusy, pinReset, pinIrq);
+}
+
 void HoymilesClass::loop()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _radioNrf->loop();
     _radioCmt->loop();
+    _radioSx1262->loop();
 
     if (getNumInverters() == 0 || millis() - _lastPoll <= (_pollInterval * 1000)) {
         return;
@@ -124,7 +132,8 @@ void HoymilesClass::loop()
                 iv->resendPowerControlRequest();
             }
 
-            ESP_LOGI(TAG, "Queue size - NRF: %" PRIu32 " CMT: %" PRIu32 "", _radioNrf->getQueueSize(), _radioCmt->getQueueSize());
+            ESP_LOGI(TAG, "Queue size - NRF: %" PRIu32 " CMT: %" PRIu32 " SX1262: %" PRIu32 "",
+                _radioNrf->getQueueSize(), _radioCmt->getQueueSize(), _radioSx1262->getQueueSize());
             _lastPoll = millis();
         }
 
@@ -153,18 +162,19 @@ void HoymilesClass::loop()
 std::shared_ptr<InverterAbstract> HoymilesClass::addInverter(const char* name, const uint64_t serial)
 {
     std::shared_ptr<InverterAbstract> i = nullptr;
+    auto* subGhzRadio = getRadioSubGhz();
     if (HMT_4CH::isValidSerial(serial)) {
-        i = std::make_shared<HMT_4CH>(_radioCmt.get(), serial);
+        i = std::make_shared<HMT_4CH>(subGhzRadio, serial);
     } else if (HMT_6CH::isValidSerial(serial)) {
-        i = std::make_shared<HMT_6CH>(_radioCmt.get(), serial);
+        i = std::make_shared<HMT_6CH>(subGhzRadio, serial);
     } else if (HMS_4CH::isValidSerial(serial)) {
-        i = std::make_shared<HMS_4CH>(_radioCmt.get(), serial);
+        i = std::make_shared<HMS_4CH>(subGhzRadio, serial);
     } else if (HMS_2CH::isValidSerial(serial)) {
-        i = std::make_shared<HMS_2CH>(_radioCmt.get(), serial);
+        i = std::make_shared<HMS_2CH>(subGhzRadio, serial);
     } else if (HMS_1CH::isValidSerial(serial)) {
-        i = std::make_shared<HMS_1CH>(_radioCmt.get(), serial);
+        i = std::make_shared<HMS_1CH>(subGhzRadio, serial);
     } else if (HMS_1CHv2::isValidSerial(serial)) {
-        i = std::make_shared<HMS_1CHv2>(_radioCmt.get(), serial);
+        i = std::make_shared<HMS_1CHv2>(subGhzRadio, serial);
     } else if (HM_4CH::isValidSerial(serial)) {
         i = std::make_shared<HM_4CH>(_radioNrf.get(), serial);
     } else if (HM_2CH::isValidSerial(serial)) {
@@ -256,9 +266,23 @@ HoymilesRadio_CMT* HoymilesClass::getRadioCmt()
     return _radioCmt.get();
 }
 
+HoymilesRadio_SX1262* HoymilesClass::getRadioSx1262()
+{
+    return _radioSx1262.get();
+}
+
+HoymilesRadio_SubGhz* HoymilesClass::getRadioSubGhz()
+{
+    if (_radioSx1262 && _radioSx1262->isInitialized()) {
+        return _radioSx1262.get();
+    }
+
+    return _radioCmt.get();
+}
+
 bool HoymilesClass::isAllRadioIdle() const
 {
-    return _radioNrf.get()->isIdle() && _radioCmt.get()->isIdle();
+    return _radioNrf.get()->isIdle() && _radioCmt.get()->isIdle() && _radioSx1262.get()->isIdle();
 }
 
 uint32_t HoymilesClass::PollInterval() const

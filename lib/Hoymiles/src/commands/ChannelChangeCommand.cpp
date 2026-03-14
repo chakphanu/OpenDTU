@@ -28,7 +28,7 @@ ChannelChangeCommand::ChannelChangeCommand(InverterAbstract* inv, const uint64_t
 
     setCountryMode(CountryModeId_t::MODE_EU);
     setChannel(channel);
-    setTimeout(10);
+    setTimeout(250);
 }
 
 String ChannelChangeCommand::getCommandName() const
@@ -50,11 +50,8 @@ void ChannelChangeCommand::setCountryMode(const CountryModeId_t mode)
 {
     switch (mode) {
     case CountryModeId_t::MODE_US:
-        _payload[9] = 0x03;
-        _payload[10] = 0x17;
-        _payload[11] = 0x3c;
-        break;
     case CountryModeId_t::MODE_BR:
+    case CountryModeId_t::MODE_TH:
         _payload[9] = 0x03;
         _payload[10] = 0x17;
         _payload[11] = 0x3c;
@@ -74,6 +71,14 @@ bool ChannelChangeCommand::handleResponse(const fragment_t fragment[], const uin
 
 uint8_t ChannelChangeCommand::getMaxResendCount() const
 {
-    // This command will never retrieve an answer. Therefor it's not required to repeat it
+    // Allow one retry in case the first ChannelChange is lost
+    return 1;
+}
+
+uint8_t ChannelChangeCommand::getMaxRetransmitCount() const
+{
+    // D6 reply has no "last fragment" marker (0x80 bit not set),
+    // so verifyAllFragments always sees "Last missing".
+    // Zero retransmits prevents useless retransmit spam after D6 receipt.
     return 0;
 }
