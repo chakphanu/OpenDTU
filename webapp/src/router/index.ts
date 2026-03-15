@@ -1,6 +1,7 @@
 import AboutView from '@/views/AboutView.vue';
 import ConfigAdminView from '@/views/ConfigAdminView.vue';
 import ConsoleInfoView from '@/views/ConsoleInfoView.vue';
+import HistoryView from '@/views/HistoryView.vue';
 import DeviceAdminView from '@/views/DeviceAdminView.vue';
 import DtuAdminView from '@/views/DtuAdminView.vue';
 import ErrorView from '@/views/ErrorView.vue';
@@ -76,6 +77,11 @@ const router = createRouter({
             path: '/info/console',
             name: 'Web Console',
             component: ConsoleInfoView,
+        },
+        {
+            path: '/info/history',
+            name: 'Power History',
+            component: HistoryView,
         },
         {
             path: '/settings/network',

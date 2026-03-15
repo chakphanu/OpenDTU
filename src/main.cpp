@@ -4,6 +4,7 @@
  */
 #include "Configuration.h"
 #include "Datastore.h"
+#include "HistoryStore.h"
 #include "Display_Graphic.h"
 #include "I18n.h"
 #include "InverterSettings.h"
@@ -126,6 +127,7 @@ void setup()
     InverterSettings.init(scheduler);
 
     Datastore.init(scheduler);
+    HistoryStore.init(scheduler);
     RestartHelper.init(scheduler);
 
     ESP_LOGI(TAG, "Startup complete");

@@ -7,6 +7,7 @@
 #include "WebApi_errors.h"
 #include "WebApi_eventlog.h"
 #include "WebApi_file.h"
+#include "WebApi_history.h"
 #include "WebApi_firmware.h"
 #include "WebApi_gridprofile.h"
 #include "WebApi_i18n.h"
@@ -53,6 +54,7 @@ private:
     WebApiDtuClass _webApiDtu;
     WebApiEventlogClass _webApiEventlog;
     WebApiFileClass _webApiFile;
+    WebApiHistoryClass _webApiHistory;
     WebApiFirmwareClass _webApiFirmware;
     WebApiGridProfileClass _webApiGridprofile;
     WebApiI18nClass _webApiI18n;

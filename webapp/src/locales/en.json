@@ -19,9 +19,26 @@
         "NTP": "NTP",
         "MQTT": "MQTT",
         "Console": "Console",
+        "PowerHistory": "Power History",
         "About": "About",
         "Logout": "Logout",
         "Login": "Login"
+    },
+    "history": {
+        "PowerHistory": "Power History",
+        "ACPower": "AC Power (W)",
+        "DCPower": "DC Power per MPPT (W)",
+        "BufferStatus": "Buffer Status",
+        "Records": "Records",
+        "BufferUsage": "Buffer Usage",
+        "MemoryUsed": "Memory Allocated",
+        "OldestRecord": "Oldest Record",
+        "NewestRecord": "Newest Record",
+        "AutoRefresh": "Auto Refresh (60s)",
+        "NoData": "No history data available yet. Data is recorded every minute.",
+        "SelectInverter": "Select Inverter",
+        "AllInverters": "All Inverters",
+        "TotalACPower": "Total AC Power (W)"
     },
     "base": {
         "Loading": "Loading...",
