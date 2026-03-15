@@ -164,9 +164,10 @@
                                     >
                                         <BIconJournalText style="font-size: 24px" />
                                         <span
+                                            v-if="unreadEvents(inverter) > 0"
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger"
                                         >
-                                            {{ inverter.events }}
+                                            {{ unreadEvents(inverter) }}
                                             <span class="visually-hidden">{{ $t('home.UnreadMessages') }}</span>
                                         </span>
                                     </button>
@@ -695,6 +696,16 @@ export default defineComponent({
     },
     methods: {
         isLoggedIn,
+        getSeenEventCount(serial: string): number {
+            const val = localStorage.getItem('eventlog_seen_' + serial);
+            return val ? parseInt(val, 10) : 0;
+        },
+        setSeenEventCount(serial: string, count: number) {
+            localStorage.setItem('eventlog_seen_' + serial, count.toString());
+        },
+        unreadEvents(inverter: any): number {
+            return Math.max(0, inverter.events - this.getSeenEventCount(inverter.serial));
+        },
         getInitialData(triggerLoading: boolean = true) {
             if (triggerLoading) {
                 this.dataLoading = true;
@@ -813,6 +824,10 @@ export default defineComponent({
         },
         onShowEventlog(serial: string) {
             this.eventLogLoading = true;
+            const inv = this.inverterData.find((i: any) => i.serial === serial);
+            if (inv) {
+                this.setSeenEventCount(serial, inv.events);
+            }
             fetch('/api/eventlog/status?inv=' + serial + '&locale=' + this.$i18n.locale, {
                 headers: authHeader(),
             })
