@@ -260,6 +260,13 @@
                                                                     inverter.radio_stats.tx_request
                                                                 )
                                                             }}
+                                                            <span
+                                                                v-if="inverter.radio_stats.rx_recent_count > 0"
+                                                                class="text-info"
+                                                            >
+                                                                ({{ $t('home.RecentRate') }}:
+                                                                {{ ratio(inverter.radio_stats.rx_recent_success, inverter.radio_stats.rx_recent_count) }})
+                                                            </span>
                                                         </td>
                                                     </tr>
                                                     <tr>

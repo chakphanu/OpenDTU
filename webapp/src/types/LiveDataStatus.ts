@@ -37,6 +37,8 @@ export interface RadioStatistics {
     predicted_hop_pattern: number;
     last_frag_count: number;
     last_burst_rx: number;
+    rx_recent_success: number;
+    rx_recent_count: number;
 }
 
 export interface Inverter {

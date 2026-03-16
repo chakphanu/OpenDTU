@@ -130,6 +130,8 @@ void HistoryStoreClass::loop()
         rec.yieldDay = static_cast<uint16_t>(
             inv->Statistics()->getChannelFieldValue(TYPE_INV, CH0, FLD_YD));
 
+        rec.rssi = inv->getLastRssi();
+
         rec.flags = FLAG_VALID | FLAG_REACHABLE;
         if (inv->isProducing()) {
             rec.flags |= FLAG_PRODUCING;

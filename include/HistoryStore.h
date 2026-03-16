@@ -15,7 +15,7 @@ struct __attribute__((packed)) HistoryRecord {
     uint16_t yieldDay;                          // 2 bytes - Wh
     uint8_t channelCount;                       // 1 byte - actual DC channels
     uint8_t flags;                              // 1 byte - bit0=valid, bit1=reachable, bit2=producing
-    uint8_t _padding;                           // 1 byte
+    int8_t rssi;                                // 1 byte - last RSSI dBm
 };
 // Total: 24 bytes
 

@@ -73,6 +73,7 @@ void HoymilesRadio::handleReceivedPackage()
                 // Statistics: Count RX Fail No Answer
                 if (inv->RadioStats.TxRequestData > 0) {
                     inv->RadioStats.RxFailNoAnswer++;
+                    inv->RadioStats.pushResult(false);
                 }
 
                 _commandQueue.pop();
@@ -83,6 +84,7 @@ void HoymilesRadio::handleReceivedPackage()
                 // Statistics: Count RX Fail Partial Answer
                 if (inv->RadioStats.TxRequestData > 0) {
                     inv->RadioStats.RxFailPartialAnswer++;
+                    inv->RadioStats.pushResult(false);
                 }
 
                 _commandQueue.pop();
@@ -93,6 +95,7 @@ void HoymilesRadio::handleReceivedPackage()
                 // Statistics: Count RX Fail Corrupt Data
                 if (inv->RadioStats.TxRequestData > 0) {
                     inv->RadioStats.RxFailCorruptData++;
+                    inv->RadioStats.pushResult(false);
                 }
 
                 _commandQueue.pop();
@@ -112,6 +115,7 @@ void HoymilesRadio::handleReceivedPackage()
                 // Statistics: Count RX Success
                 if (inv->RadioStats.TxRequestData > 0) {
                     inv->RadioStats.RxSuccess++;
+                    inv->RadioStats.pushResult(true);
                 }
 
                 _commandQueue.pop();

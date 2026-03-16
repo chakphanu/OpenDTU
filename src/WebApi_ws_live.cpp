@@ -175,6 +175,8 @@ void WebApiWsLiveClass::generateInverterCommonJsonResponse(JsonObject& root, std
     root["radio_stats"]["predicted_hop_pattern"] = inv->RadioStats.PredictedHopPattern;
     root["radio_stats"]["last_frag_count"] = inv->RadioStats.LastFragCount;
     root["radio_stats"]["last_burst_rx"] = inv->RadioStats.LastBurstRxCount;
+    root["radio_stats"]["rx_recent_success"] = inv->RadioStats.countRecentSuccess();
+    root["radio_stats"]["rx_recent_count"] = inv->RadioStats.RecentCount;
 }
 
 void WebApiWsLiveClass::generateInverterChannelJsonResponse(JsonObject& root, std::shared_ptr<InverterAbstract> inv)

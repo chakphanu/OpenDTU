@@ -18,6 +18,7 @@ void WebApiHistoryClass::init(AsyncWebServer& server, Scheduler& scheduler)
 
     server.on("/api/history/status", HTTP_GET, std::bind(&WebApiHistoryClass::onHistoryStatus, this, _1));
     server.on("/api/history/data", HTTP_GET, std::bind(&WebApiHistoryClass::onHistoryData, this, _1));
+    server.on("/api/history/sparkline", HTTP_GET, std::bind(&WebApiHistoryClass::onSparkline, this, _1));
 }
 
 void WebApiHistoryClass::onHistoryStatus(AsyncWebServerRequest* request)
@@ -241,6 +242,63 @@ void WebApiHistoryClass::onHistoryData(AsyncWebServerRequest* request)
     }
     response->print(']');
 
+    // RSSI array
+    response->print(",\"rssi\":[");
+    for (size_t i = 0; i < count; i++) {
+        size_t age = count - 1 - i;
+        const auto* rec = HistoryStore.getRecord(age, invIndex);
+        if (i > 0)
+            response->print(',');
+        response->print(rec ? rec->rssi : 0);
+    }
+    response->print(']');
+
     response->print("}}");
+    request->send(response);
+}
+
+void WebApiHistoryClass::onSparkline(AsyncWebServerRequest* request)
+{
+    if (!WebApi.checkCredentialsReadonly(request)) {
+        return;
+    }
+
+    uint8_t numInv = Hoymiles.getNumInverters();
+    size_t totalCount = HistoryStore.getRecordCount();
+    size_t count = totalCount < 60 ? totalCount : 60;
+
+    auto* response = request->beginResponseStream("application/json");
+    response->printf("{\"count\":%u,\"power\":[", (unsigned)count);
+
+    // AC power totals
+    for (size_t i = 0; i < count; i++) {
+        size_t age = count - 1 - i; // oldest first
+        uint32_t total = 0;
+        for (uint8_t n = 0; n < numInv; n++) {
+            const auto* rec = HistoryStore.getRecord(age, n);
+            if (rec)
+                total += rec->acPower;
+        }
+        if (i > 0)
+            response->print(',');
+        response->print(total);
+    }
+
+    // Yield day totals
+    response->print("],\"yd\":[");
+    for (size_t i = 0; i < count; i++) {
+        size_t age = count - 1 - i;
+        uint32_t total = 0;
+        for (uint8_t n = 0; n < numInv; n++) {
+            const auto* rec = HistoryStore.getRecord(age, n);
+            if (rec)
+                total += rec->yieldDay;
+        }
+        if (i > 0)
+            response->print(',');
+        response->print(total);
+    }
+
+    response->print("]}");
     request->send(response);
 }

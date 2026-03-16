@@ -45,6 +45,13 @@
             </div>
         </div>
 
+        <div class="card mb-3" v-if="selectedSerial !== 'all' && hasRssiData">
+            <div class="card-header">{{ $t('history.RSSI') }}</div>
+            <div class="card-body">
+                <PowerChart :data="rssiChartData" :series="rssiSeries" :timeRangeMinutes="selectedRange" />
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header">{{ $t('history.BufferStatus') }}</div>
             <div class="card-body">
@@ -168,6 +175,7 @@ export default defineComponent({
                 ac: d.ac.slice(startIdx),
                 temp: d.temp.slice(startIdx),
                 yd: d.yd.slice(startIdx),
+                rssi: d.rssi ? d.rssi.slice(startIdx) : undefined,
             };
             for (let i = 0; i < 6; i++) {
                 const key = ('dc' + i) as keyof HistoryData['data'];
@@ -252,6 +260,27 @@ export default defineComponent({
                 });
             }
             return series;
+        },
+        hasRssiData(): boolean {
+            const d = this.filteredData;
+            return !!(d && d.rssi && d.rssi.length > 0);
+        },
+        rssiChartData(): uPlot.AlignedData {
+            const d = this.filteredData;
+            if (!d || !d.t || d.t.length === 0 || !d.rssi) {
+                return [new Float64Array(0), new Float64Array(0)] as uPlot.AlignedData;
+            }
+            return [d.t, d.rssi] as uPlot.AlignedData;
+        },
+        rssiSeries(): uPlot.Series[] {
+            return [
+                {},
+                {
+                    label: 'RSSI',
+                    stroke: '#3498db',
+                    width: 1.5,
+                },
+            ];
         },
         bufferUsagePercent(): string {
             if (!this.status.max_records || this.status.max_records === 0) {

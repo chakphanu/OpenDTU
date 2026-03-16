@@ -101,6 +101,38 @@ public:
         int8_t PredictedHopPattern; // predicted next hop pattern
         uint8_t LastFragCount;      // fragment count from last burst
         uint8_t LastBurstRxCount;   // fragments actually received in last burst
+
+        // Sliding window for recent success rate (last 100 requests)
+        // Bit buffer: 1=success, 0=fail. Only 16 bytes + 2 bytes overhead.
+        uint32_t RecentResults[4];  // 128-bit circular buffer (using 100 bits)
+        uint8_t RecentHead;         // next write position (0-99)
+        uint8_t RecentCount;        // entries filled so far (0-100)
+
+        void pushResult(bool success)
+        {
+            const uint8_t idx = RecentHead / 32;
+            const uint8_t bit = RecentHead % 32;
+            if (success) {
+                RecentResults[idx] |= (1u << bit);
+            } else {
+                RecentResults[idx] &= ~(1u << bit);
+            }
+            RecentHead = (RecentHead + 1) % 100;
+            if (RecentCount < 100) {
+                RecentCount++;
+            }
+        }
+
+        uint8_t countRecentSuccess() const
+        {
+            uint8_t count = 0;
+            for (uint8_t i = 0; i < RecentCount; i++) {
+                if (RecentResults[i / 32] & (1u << (i % 32))) {
+                    count++;
+                }
+            }
+            return count;
+        }
     } RadioStats = {};
 
     virtual bool sendStatsRequest() = 0;

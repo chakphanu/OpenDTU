@@ -11,4 +11,5 @@ public:
 private:
     void onHistoryStatus(AsyncWebServerRequest* request);
     void onHistoryData(AsyncWebServerRequest* request);
+    void onSparkline(AsyncWebServerRequest* request);
 };

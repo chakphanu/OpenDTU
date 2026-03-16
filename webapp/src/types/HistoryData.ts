@@ -14,6 +14,7 @@ export interface HistoryData {
         dc5?: number[];
         temp: number[];
         yd: number[];
+        rssi?: number[];
         total?: number[];
         inv0?: number[];
         inv1?: number[];
