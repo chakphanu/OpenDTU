@@ -422,8 +422,28 @@ void DisplayGraphicST7796Class::drawTextScreen(bool enableScreensaver)
             snprintf(val, sizeof(val), "%.0f%%", rate);
             drawTextAt(val, R, 76, 3, good ? ColorAccent : ColorWarning);
 
-            snprintf(val, sizeof(val), "%d dBm", static_cast<int>(inv->getLastRssi()));
-            drawTextAt(val, R + 90, 76, 2, ColorMuted);
+            {
+                int8_t rssi = inv->getLastRssi();
+                uint16_t rssiColor;
+                uint8_t bars;
+                if (rssi > -85)       { rssiColor = GREEN;  bars = 5; }
+                else if (rssi > -95)  { rssiColor = CYAN;   bars = 4; }
+                else if (rssi > -100) { rssiColor = YELLOW; bars = 3; }
+                else if (rssi > -105) { rssiColor = ORANGE; bars = 2; }
+                else                  { rssiColor = RED;    bars = 1; }
+
+                // Draw 5 signal bars
+                int16_t bx = R + 90;
+                int16_t by = 92;
+                for (uint8_t i = 0; i < 5; i++) {
+                    int16_t bh = 4 + i * 3;
+                    uint16_t c = (i < bars) ? rssiColor : DARKGREY;
+                    _display->fillRect(bx + i * 6, by - bh, 4, bh, c);
+                }
+
+                snprintf(val, sizeof(val), "%d", static_cast<int>(rssi));
+                drawTextAt(val, bx + 34, 76, 2, rssiColor);
+            }
 
             snprintf(val, sizeof(val), "%lu / %lu",
                 static_cast<unsigned long>(ok), static_cast<unsigned long>(attempts));

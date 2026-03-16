@@ -290,6 +290,9 @@ export default defineComponent({
         },
     },
     created() {
+        if (this.$route.query.inv) {
+            this.selectedSerial = this.$route.query.inv as string;
+        }
         this.fetchInverters();
     },
     beforeUnmount() {

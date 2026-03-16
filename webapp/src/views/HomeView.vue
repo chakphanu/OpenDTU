@@ -104,6 +104,22 @@
                             </div>
                             <div class="btn-toolbar p-2" role="toolbar">
                                 <div class="btn-group me-2" role="group">
+                                    <router-link
+                                        :to="{ name: 'Power History', query: { inv: inverter.serial } }"
+                                        class="btn btn-sm btn-dark d-flex align-items-center text-decoration-none">
+                                        <span class="signal-bars me-1">
+                                            <span v-for="i in 5" :key="i" class="signal-bar"
+                                                :style="{
+                                                    height: (3 + i * 2) + 'px',
+                                                    backgroundColor: i <= rssiLevel(inverter.radio_stats.rssi).bars
+                                                        ? rssiLevel(inverter.radio_stats.rssi).color : 'rgba(255,255,255,0.2)'
+                                                }">
+                                            </span>
+                                        </span>
+                                        {{ inverter.radio_stats.rssi }} dBm
+                                    </router-link>
+                                </div>
+                                <div class="btn-group me-2" role="group">
                                     <button
                                         :disabled="!isLogged"
                                         type="button"
@@ -332,10 +348,20 @@
                                                             {{ $t('home.Rssi') }}
                                                             <BIconInfoCircle v-tooltip :title="$t('home.RssiHint')" />
                                                         </td>
-                                                        <td>
-                                                            {{ $t('home.dBm', { dbm: $n(inverter.radio_stats.rssi) }) }}
+                                                        <td colspan="2">
+                                                            <span class="signal-bars me-2">
+                                                                <span v-for="i in 5" :key="i" class="signal-bar"
+                                                                    :style="{
+                                                                        height: (4 + i * 3) + 'px',
+                                                                        backgroundColor: i <= rssiLevel(inverter.radio_stats.rssi).bars
+                                                                            ? rssiLevel(inverter.radio_stats.rssi).color : '#555'
+                                                                    }">
+                                                                </span>
+                                                            </span>
+                                                            <span :style="{ color: rssiLevel(inverter.radio_stats.rssi).color }">
+                                                                {{ $t('home.dBm', { dbm: $n(inverter.radio_stats.rssi) }) }}
+                                                            </span>
                                                         </td>
-                                                        <td></td>
                                                     </tr>
                                                     <tr>
                                                         <td>{{ $t('home.HopPattern') }}</td>
@@ -1016,6 +1042,13 @@ export default defineComponent({
             }
             return 'P' + (pattern + 1);
         },
+        rssiLevel(rssi: number): { bars: number; color: string; bg: string } {
+            if (rssi > -85) return { bars: 5, color: '#2ecc71', bg: '#198754' };
+            if (rssi > -95) return { bars: 4, color: '#17a2b8', bg: '#0d6efd' };
+            if (rssi > -100) return { bars: 3, color: '#f39c12', bg: '#cc8800' };
+            if (rssi > -105) return { bars: 2, color: '#e67e22', bg: '#e67e22' };
+            return { bars: 1, color: '#e74c3c', bg: '#dc3545' };
+        },
     },
 });
 </script>
@@ -1024,5 +1057,14 @@ export default defineComponent({
 .btn-group {
     border-radius: var(--bs-border-radius);
     margin-top: 0.25rem;
+}
+.signal-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+}
+.signal-bar {
+    width: 3px;
+    border-radius: 1px;
 }
 </style>
